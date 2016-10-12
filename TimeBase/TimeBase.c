@@ -23,16 +23,11 @@ int main() {
     sbi( DDRC, 3 );
     scanInit();
     spiInit();
-    wdt_enable(WDTO_1S);      // watchdog to 1 second
     sei();
     for ( ; ; ) {
-        for ( i = 0; i < 100; i++ ) {
+        for ( i = 0; i < 100; i++ )
             asm( "nop\n" );
-            wdt_reset();
-        }
-        for ( i = 0; i < 100; i++ ) {
+        for ( i = 0; i < 100; i++ )
             asm( "nop\n" );
-            wdt_reset();
-    }
     }
 }

@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+<LastCompileConfig>(Default)</LastCompileConfig>
+ <Mainframe MaximizeMode="1" />
+ <DocsAndViews NumberOfDocuments="7" >
+<Doc0 CursorPosLine="106" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="0" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/Scan.c" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="1" Type="KWriteView" MinMaxMode="0" />  </Doc0>
+  <Doc1 CursorPosLine="17" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="16" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/TimeBase.c" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc1>
+  <Doc2 CursorPosLine="17" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="37" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/Makefile" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc2>
+  <Doc3 CursorPosLine="12" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="34" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/Scan.h" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc3>
+  <Doc4 CursorPosLine="1" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="10" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/fuse.srec" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc4>
+  <Doc5 CursorPosLine="51" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="27" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/Spi.c" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc5>
+  <Doc6 CursorPosLine="9" Type="KWriteDoc" NumberOfViews="1" CursorPosCol="27" FileName="/mnt/work/work-elsis/digital/HE/SW/TimeBase/Spi.h" >
+<View0 Top="0" Width="1117" Attach="1" Height="683" Left="0" Focus="0" Type="KWriteView" MinMaxMode="0" />  </Doc6> </DocsAndViews></KDevPrjSession>

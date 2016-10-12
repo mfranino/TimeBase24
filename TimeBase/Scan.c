@@ -17,17 +17,19 @@
 // Digital output data
 volatile OutDatat OutDat;
 unsigned char dirMask = 0x00;
-static unsigned char cTime = 0;
+static unsigned int cTime = 0;
 
 // Dpll data
 static unsigned char dpllInit=0; //dpll init flag
-unsigned char dpllEnable=0x10;   //dpll enable flag
+unsigned char dpllEnable=0x00;   //dpll enable flag - DPLL NORMALLY OFF!!!
 static unsigned int dpllval=20000u;
 
 // A/D converter data
 volatile OutDatat OutVoltage, OutCurrent;
 
-unsigned char tmr2Start=0, phDetCnt=0;
+unsigned char tmr2Start=0;
+char phDetCnt=-1;
+unsigned int var_close = TRIAC_CLOSURE; //initial period cut-off time (approx. 9.24ms)
 
 //+
 // actual zero cross routine
@@ -47,7 +49,7 @@ void inline phaseDetInt()
 //+
 // Digital output timer
 //-
-
+//output compare: TCNT2 & OCR2
 SIGNAL( SIG_OUTPUT_COMPARE2 ) {
     sbi( PORTB, 1 ); // diagnostic pin
     //
@@ -59,7 +61,8 @@ SIGNAL( SIG_OUTPUT_COMPARE2 ) {
         cbi( PORTB, 1);
         return;
     }
-    if ( cTime > TRIAC_CLOSURE ) { // cut off at the end if not direkt!!!
+//    if ( cTime > TRIAC_CLOSURE ) { // cut off at the end if not direkt!!!
+    if ( cTime > var_close ) { // cut off at the end if not direkt!!!
         cbi( TIMSK, OCIE2 ); // disable interrupts
         TCCR2 = 0x08; // CTC mode, stop
         asm volatile(
@@ -106,7 +109,7 @@ SIGNAL( SIG_OUTPUT_COMPARE2 ) {
 #ifdef DPLL
 SIGNAL( SIG_OUTPUT_COMPARE1A ) {
     if (dpllEnable) {
-        PORTC^=8;       // toggle PORT C 3
+        PORTC^=8;       // toggle PORT C3
         cbi( TIMSK, OCIE2 ); // disable interrupts
         TCCR2 = 0x08; // CTC mode, stop
         TCNT2 = 0; // reset
@@ -140,11 +143,48 @@ SIGNAL( SIG_INTERRUPT0 ) {
     unsigned int cntSum;
     unsigned int cntAverage;
     static unsigned char counterPtr;
+	static unsigned int mycntSum[3] = {20000u,20000u,20000u};
 
     if (!dpllEnable) {
-        phaseDetInt();
+    //    phaseDetInt(); //timer2 is reset in new code segment
+/* new code */
+	//    cbi( TIMSK, OCIE1A ); // disable TMR1 interrupt
+		// add 0.5ms delay 
+        cbi( TIMSK, OCIE2 ); // disable interrupts
+        TCCR2 = 0x08; // CTC mode, stop
+        TCNT2 = 0; // reset
+        OCR2=PHASEDELAY; //approx. 0.5ms
+        sbi( SFIOR, PSR2 ); // and reset prescaler
+        TCCR2 = 0x0b; // CTC mode, /32 prescaler =>run
+        sbi( TIMSK, OCIE2 ); // enable interrupts
+        tmr2Start=1;
+		cTime = 0;	
+
+		if(dpllInit>0) {
+			OCR1A = 0xffff; // overflow on maximal counter value
+			phDetCnt=-1;
+		}
+		if(phDetCnt<0) var_close = TRIAC_CLOSURE;		
+		else {
+		    cnt=TCNT1L+(TCNT1H<<8);
+			if( (cnt > MAXFREQ) && (cnt < MINFREQ) ) { //if measured value between 45-55 Hz halfperiod
+				mycntSum[0]=mycntSum[1];
+				mycntSum[1]=mycntSum[2];
+				mycntSum[2]=cnt;
+				for(i=0,cntAverage=0;i<3;i++) cntAverage+=(unsigned int) mycntSum[i]/3;
+				var_close = ((unsigned int) cntAverage/TIMER2CNT) - HPERIODCUTOFF - 13u; //calc cutoff time 
+				// subtract (13u ~ 0.5ms) to compensate initial delay
+			    PORTB &= 0xfe; // clear diagnostic pin RB0
+			}
+		}
+   	    TCCR1B = 0x08; // clear on OC1A, stopped
+		TCNT1 = 0; //reset timer count
+   	    TCCR1B = 0x0a; // CTC, 8 prescaler, start
+
+/* end new code */
         dpllInit=0;
-        TCCR1B = 0x08; // clear on OC1A, stopped
+		phDetCnt=0; 
+//        TCCR1B = 0x08; // clear on OC1A, stopped
         cbi( MCUCR, ISC01 );    // any logical change generates interrupt
         return;
     }
@@ -161,7 +201,10 @@ SIGNAL( SIG_INTERRUPT0 ) {
         TCNT1L = DPLLINITVAL&0xff;
         if (!dpllInit) {
             // start counter here
-            TCCR1B = 0x0a; // CTC,8 prescaler
+			var_close=TRIAC_CLOSURE; //restore initial closure time
+			OCR1A = 20000u; //restore output compare match value
+			TCCR1B = 0x0a; // CTC,8 prescaler, start
+		    sbi( TIMSK, OCIE1A ); // enable TMR1 interrupt	
         }
         up=down=0;
         oldcnt=(DPLLINITVAL*ZTF);
@@ -237,12 +280,20 @@ void scanInit() {
     TCCR2 = 0x08;           // CTC mode /8 prescaler
     OCR2 = TIMER2CNT;       // output compare constant
     cbi( TIMSK, OCIE2 );    // disable interrupts
-    // DPLL timer
+/*    // DPLL timer
     TCCR1A = 0;
-    OCR1A = 20000u; // time costant (16Mhz/8/2000 = 100Hz)
+    OCR1A = 20000u; // time costant (16Mhz/8/20000 = 100Hz)
     TCNT1 = 0x80;
     TCCR1B = 0x08; // clear on OC1A, stopped
     sbi( TIMSK, OCIE1A ); // enable its interrupt
+*/
+/* new code */
+    TCCR1A = 0;
+    OCR1A = 0xffff; //MAX value 
+    TCNT1 = 0x00;
+    TCCR1B = 0x08; // clear on OC1A, stopped
+    sbi( TIMSK, OCIE1A ); // enable its interrupt (let it run)
+/* end new code */
     // phase detect = INT 0
 #if (!defined DPLL) || (!defined SINGLEEDGEDET)
     cbi( MCUCR, ISC01 );    // any logical change generates interrupt
