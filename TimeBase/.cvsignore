@@ -1,0 +1,17 @@
+bak
+Makefile.am
+Scan.o
+Spi.o
+TimeBase.bin
+TimeBase.cbx
+TimeBase.elf
+TimeBase.hex
+TimeBase.kdevprj
+TimeBase.kdevses
+TimeBase.map
+TimeBase.o
+TimeBase.srec
+linux
+timebase.cbx.local
+.cdtproject
+.project
